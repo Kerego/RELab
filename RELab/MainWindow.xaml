@@ -1,0 +1,310 @@
+﻿<Window x:Class="RELab.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RELab"
+		xmlns:f="clr-namespace:RELab.Core;assembly=RELab.Core"
+		xmlns:models="clr-namespace:RELab.Models"
+		xmlns:System="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525"
+		Name="Win">
+	<Window.Resources>
+		<ItemsPanelTemplate x:Key="MenuItemPanelTemplate">
+			<StackPanel Margin="-20,0,-30,0" Background="White"/>
+		</ItemsPanelTemplate>
+		<Style TargetType="{x:Type MenuItem}">
+			<Setter Property="ItemsPanel" Value="{StaticResource MenuItemPanelTemplate}"/>
+		</Style>
+		<Style TargetType="{x:Type ContextMenu}">
+			<Setter Property="ItemsPanel" Value="{StaticResource MenuItemPanelTemplate}"/>
+		</Style>
+		<local:EnumToColorConverter x:Key="colorConverter"/>
+		<local:EnumToVisibilityConverter x:Key="visConverter"/>
+		<ObjectDataProvider x:Key="dataFromEnum"
+							MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+			<ObjectDataProvider.MethodParameters>
+				<x:Type TypeName="f:Status"/>
+			</ObjectDataProvider.MethodParameters>
+		</ObjectDataProvider>
+	</Window.Resources>
+    <Grid Background="YellowGreen">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="2*"/>
+			<ColumnDefinition Width="3*"/>
+			<ColumnDefinition Width="Auto"/>
+			<ColumnDefinition Width="9*"/>
+			<ColumnDefinition Width="9*"/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="6*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<TextBlock Text="Spoof : " Grid.Row="1" FontSize="20" Margin="2,0,2,0"/>
+		<TextBox Grid.Row="1" 
+				 Grid.Column="1" 
+				 Grid.ColumnSpan="2"
+				 Margin="2,0,0,0" 
+				 BorderThickness="0" 
+				 FontSize="20"
+				 Text="{Binding SnoopName}"
+				 Background="Lavender"></TextBox>
+		
+		<!--Name-->
+		<TextBox BorderThickness="0" 
+				 Background="Lavender"
+				 TextAlignment="Center"
+				 FontSize="18"
+				 Grid.ColumnSpan="2"
+				 Text="{Binding Nickname, UpdateSourceTrigger=PropertyChanged}"
+				 Margin="0,0,2,2">
+
+			<TextBox.InputBindings>
+				<KeyBinding Key="Return" Command="{Binding ChangeNameCommand}">
+				</KeyBinding>
+			</TextBox.InputBindings>
+		</TextBox>
+
+		<!--Status-->
+		<ComboBox BorderThickness="0" Margin="0,0,0,2" Grid.Row="0" Width="46" Grid.Column="2" HorizontalContentAlignment="Stretch" SelectedItem="{Binding CurrentStatus}" ItemsSource="{Binding Source = {StaticResource dataFromEnum}}">
+			<ComboBox.ItemTemplate>
+				<DataTemplate>
+					<StackPanel Orientation="Horizontal">
+						<Ellipse Width="15" Height="15" Margin="2" Fill="{Binding Converter={StaticResource colorConverter}}"></Ellipse>
+						<TextBlock Text ="{Binding}" Margin="2" FontSize="16"></TextBlock>
+					</StackPanel>
+				</DataTemplate>
+			</ComboBox.ItemTemplate>
+		</ComboBox>
+
+		<!--Topic-->
+		<TextBox Grid.Column="3"
+				 Grid.ColumnSpan="2"
+				 BorderThickness="0" 
+				 Background="Lavender"
+				 TextAlignment="Center"
+				 FontSize="18"
+				 Margin="2,0,0,2"
+				 Text="{Binding Topic, UpdateSourceTrigger=PropertyChanged}">
+				
+			<TextBox.InputBindings>
+				<KeyBinding Key="Return" Command="{Binding ChangeTopicCommand}">
+				</KeyBinding>
+			</TextBox.InputBindings>
+		</TextBox>
+
+		<!--Users-->
+		<ItemsControl Name="UsersControl" Grid.Column="3" Grid.ColumnSpan="2" BorderThickness="0" Grid.Row="1" HorizontalAlignment="Center" ItemsSource="{Binding Users}">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<WrapPanel />
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<Button Margin="2" BorderThickness="0" Command="{Binding DataContext.AddPrivateChatCommand, ElementName=UsersControl}" CommandParameter="{Binding}">
+						<StackPanel Orientation="Horizontal" >
+							<Ellipse Width="15" Height="15" Margin="2" Fill="{Binding Status, Converter={StaticResource colorConverter}}"></Ellipse>
+							<TextBlock Text="{Binding Name}" FontSize="16" Margin="2"/>
+						</StackPanel>
+					</Button>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
+
+		<!--NewChannel-->
+		<TextBox Grid.Row="2"
+				 Background="Lavender"
+				 TextAlignment="Center"
+				 FontSize="20"
+				 BorderThickness="0"
+				 Grid.ColumnSpan="3"
+				 Margin="0,2,0,2"
+				 Text="{Binding NewChannelName, UpdateSourceTrigger=PropertyChanged}">
+			<TextBox.InputBindings>
+				<KeyBinding Key="Return" Command="{Binding AddChannelCommand}">
+				</KeyBinding>
+			</TextBox.InputBindings>
+		</TextBox>
+		
+		<!--Channels-->
+		<ListView Name="root" 
+				  Grid.Row="3"
+				  Grid.RowSpan="2"
+				  Grid.ColumnSpan="3"
+				  BorderThickness="0"
+				  Margin="0,0,0,0"
+				  HorizontalContentAlignment="Stretch"
+				  Background="Beige" SelectedItem="{Binding SelectedChannel}" 
+				  ItemsSource="{Binding Channels}">
+			<ListView.Resources>
+				<Style TargetType="{x:Type ListViewItem}">
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="{x:Type ListViewItem}">
+								<Border x:Name="Border"
+										BorderBrush="{TemplateBinding BorderBrush}"
+										BorderThickness="{TemplateBinding BorderThickness}"
+										Background="{TemplateBinding Background}"
+										Padding="{TemplateBinding Padding}"
+										SnapsToDevicePixels="true">
+									<ContentPresenter	HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+														SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+														VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+								</Border>
+								<ControlTemplate.Triggers>
+									<MultiTrigger>
+										<MultiTrigger.Conditions>
+											<Condition	Property="Selector.IsSelectionActive"
+														Value="False" />
+											<Condition	Property="IsSelected"
+														Value="True" />
+										</MultiTrigger.Conditions>
+											<Setter Property="Background"
+													TargetName="Border"
+													Value="YellowGreen" />
+									</MultiTrigger>
+									<MultiTrigger>
+										<MultiTrigger.Conditions>
+											<Condition	Property="Selector.IsSelectionActive"
+														Value="True" />
+											<Condition	Property="IsSelected"
+														Value="True" />
+										</MultiTrigger.Conditions>
+										<Setter Property="Background"
+												TargetName="Border"
+												Value="YellowGreen" />
+									</MultiTrigger>
+								</ControlTemplate.Triggers>
+							</ControlTemplate>
+						</Setter.Value>
+					</Setter>
+				</Style>
+			</ListView.Resources>
+			
+			<ListView.ItemTemplate>
+				<DataTemplate>
+					<Grid>
+						<TextBlock Text="{Binding Id}" FontSize="20" HorizontalAlignment="Left"/>
+						<Button Content="X" 
+								Command="{Binding DataContext.RemoveChannelCommand, ElementName=root}" 
+								CommandParameter="{Binding}" 
+								BorderThickness="0" 
+								Background="Transparent" 
+								HorizontalAlignment="Right"
+								Visibility="{Binding ChannelType, Converter={StaticResource visConverter}}"></Button>
+					</Grid>
+				</DataTemplate>
+			</ListView.ItemTemplate>
+		</ListView>
+
+		<!--ChatOutput-->
+		<ListView Name="ChatPart" Margin="2,2,0,2" SelectionMode="Single" Grid.Column="3" HorizontalContentAlignment="Stretch" Grid.ColumnSpan="2" Grid.Row="2" Grid.RowSpan="2" BorderThickness="0" Background="Beige" ItemsSource="{Binding SelectedChannel.Messages}" >
+			<ListView.Resources>
+				<DataTemplate DataType="{x:Type models:SniffedMessage}">
+					<Border BorderThickness="0" Background="Lavender" HorizontalAlignment="Right" >
+						<StackPanel Margin="10" >
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="{Binding Sender}" FontSize="14" Foreground="Gray"/>
+								<TextBlock Text="->" FontSize="14" Foreground="Gray"/>
+								<TextBlock Text="{Binding Receiver}" FontSize="14" Foreground="Gray"/>
+							</StackPanel>
+							<TextBlock Text="{Binding Content}" FontSize="16" MaxWidth="400" TextWrapping="Wrap"/>
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+				<DataTemplate DataType="{x:Type f:PublicMessage}">
+					<Border BorderThickness="0" Background="Lavender" HorizontalAlignment="Right" >
+						<StackPanel Margin="10" >
+							<TextBlock Text="{Binding Sender}" FontSize="14" Foreground="Gray"/>
+							<TextBlock Text="{Binding Content}" FontSize="16" MaxWidth="400" TextWrapping="Wrap"/>
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+				<DataTemplate DataType="{x:Type f:PrivateMessage}">
+					<Border BorderThickness="0" Background="Lavender" HorizontalAlignment="Right" >
+						<StackPanel Margin="10" >
+							<TextBlock Text="{Binding Sender}" FontSize="14" Foreground="Gray"/>
+							<TextBlock Text="{Binding Content}" FontSize="16" MaxWidth="400" TextWrapping="Wrap"/>
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+				<DataTemplate DataType="{x:Type models:MyMessage}">
+					<Border BorderThickness="0" Background="Lavender" HorizontalAlignment="Left" >
+						<StackPanel Margin="10" >
+							<TextBlock Text="{Binding Sender}" FontSize="14" Foreground="Gray"/>
+							<TextBlock Text="{Binding Content}" FontSize="16" MaxWidth="400" TextWrapping="Wrap"/>
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+				<DataTemplate DataType="{x:Type f:ConnectMessage}" >
+					<Border BorderThickness="0" Background="Lavender" HorizontalAlignment="Center" >
+						<StackPanel Orientation="Horizontal" Margin="10">
+							<TextBlock Text="{Binding Sender}" FontSize="16" Foreground="Black"/>
+							<TextBlock Text=" connected to channel " FontSize="16" Foreground="Gray"/>
+							<TextBlock Text="{Binding Channel}" FontSize="16" Foreground="Blue"/>
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+				<DataTemplate DataType="{x:Type f:ExitMessage}">
+					<Border BorderThickness="0" Background="Lavender" HorizontalAlignment="Center">
+						<StackPanel Orientation="Horizontal" Margin="10">
+							<TextBlock Text="{Binding Sender}" FontSize="16" Foreground="Black"/>
+							<TextBlock Text=" left the channel " FontSize="16" Foreground="Gray"/>
+							<TextBlock Text="{Binding Channel}" FontSize="16" Foreground="Blue"/>
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+				<DataTemplate DataType="{x:Type f:TopicMessage}">
+					<Border BorderThickness="0" Background="Lavender" HorizontalAlignment="Center">
+						<StackPanel Orientation="Horizontal" Margin="10">
+							<TextBlock Text="{Binding Sender}" FontSize="16" Foreground="Black"/>
+							<TextBlock Text=" changed topic to " FontSize="16" Foreground="Gray"/>
+							<TextBlock Text="{Binding Topic}" FontSize="16" Foreground="Blue"/>
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+				<DataTemplate DataType="{x:Type f:RenameMessage}">
+					<Border BorderThickness="0" Background="Lavender" HorizontalAlignment="Center">
+						<StackPanel Orientation="Horizontal" Margin="10">
+							<TextBlock Text="{Binding Sender}" FontSize="16" Foreground="Black"/>
+							<TextBlock Text=" has renamed in " FontSize="16" Foreground="Gray"/>
+							<TextBlock Text="{Binding Nickname}" FontSize="16" Foreground="Blue"/>
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+				<DataTemplate DataType="{x:Type f:StatusMessage}">
+					<Border BorderThickness="0" Background="Lavender" HorizontalAlignment="Center">
+						<StackPanel Orientation="Horizontal" Margin="10">
+							<TextBlock Text="{Binding Sender}" FontSize="16" Foreground="Black"/>
+							<TextBlock Text=" enters in " FontSize="16" Foreground="Gray"/>
+							<TextBlock Text="{Binding Status}" FontSize="16" Foreground="Blue"/>
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+			</ListView.Resources>
+		</ListView>
+		
+		<!--ChatInput-->
+		<TextBox HorizontalAlignment="Stretch"
+				 VerticalAlignment="Bottom"
+				 BorderThickness="0"
+				 Background="Lavender"
+				 Grid.Row="4"
+				 Grid.Column="3"
+				 Grid.ColumnSpan="2"
+				 Margin="2,0,0,0"
+				 Text="{Binding MessageText, UpdateSourceTrigger = PropertyChanged}"
+				 FontSize="24" >
+			<TextBox.InputBindings>
+				<KeyBinding Key="Return" Command="{Binding SendMessageCommand}">
+				</KeyBinding>
+			</TextBox.InputBindings>
+		</TextBox>
+	</Grid>
+</Window>
